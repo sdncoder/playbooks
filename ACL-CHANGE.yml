@@ -1,0 +1,17 @@
+---
+- hosts: NG_PE_BASE
+  gather_facts: no
+  vars:
+    ansible_user: "{{ sso }}"
+    ansible_password: "{{ pass }}"
+
+  tasks:
+  - name: int description
+    iosxr_config:
+      lines:
+        #- no 30                                # example to remove a line
+        - 50 permit ipv4 host x.x.x.x any       # add new line
+
+      parents:  
+        # NAME OF ACL TO BE CHANGED
+        - ipv4 access-list snmp-read-access

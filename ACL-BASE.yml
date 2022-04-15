@@ -1,0 +1,25 @@
+---
+- hosts: NG_PE_BASE
+  gather_facts: no
+  vars:
+    ansible_user: "{{ sso }}"
+    ansible_password: "{{ pass }}"
+
+  tasks:
+  - name: int description
+    iosxr_config:
+      lines:
+        #  PROD SNMP RO
+        - ipv4 access-list prod-snmp-read-access
+        - 10 remark SNMP RO
+        - 20 remark description
+        - 30 permit ipv4 host x.x.x.x any
+        - 40 remark description
+        - 50 permit ipv4 host x.x.x.x any
+        # CORP SNMP RO
+        - ipv4 access-list corp-snmp-read-access
+        - 10 remark CORP SNMP RO
+        - 20 remark description
+        - 30 permit ipv4 host x.x.x.x any
+        - 40 remark decription
+        - 50 permit ipv4 host x.x.x.x any

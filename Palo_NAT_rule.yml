@@ -41,7 +41,7 @@
       username: '{{ username }}'
       password: '{{ password }}'
     panos_object:
-      ip_address: "10.18.1.32"
+      ip_address: "x.x.x.x"
       username: '{{ username }}'
       password: '{{ password }}'
     dns_name: "{{ lookup('community.general.dig', '{{ item.ip }}', 'qtype=PTR') | regex_replace ('.use.ucdp.net.', '_') | upper }}"
@@ -160,12 +160,12 @@
         xpath: |
           /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='device_group_name']/pre-rulebase/nat/rules/entry[@name="{{ item.name }}"]/target/devices
         element: |
-          <entry name="012501009087">
+          <entry name="SN">
           <vsys>
           <entry name="vsys2"/>
           </vsys>
           </entry>
-          <entry name="012501009092">
+          <entry name="SN">
           <vsys>
           <entry name="vsys2"/>
           </vsys>

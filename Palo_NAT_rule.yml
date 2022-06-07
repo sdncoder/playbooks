@@ -1,0 +1,180 @@
+---
+# Ansible-Playbook for Panorama NGFW
+# test for creating objects 
+# This playbook will do the following
+#   1) Do a DNS lookup
+#   2) Create address object using the dns lookup results
+#   3) Create destination NAT policy
+#   4) Enable dns rewrite feature
+#   5) set the target device.
+# Variables are pulled from the .csv file specified
+
+- name: Add DNAT
+  hosts: pano
+  gather_facts: false
+  connection: local
+
+# Palo Alto library
+  collections:
+    - paloaltonetworks.panos
+
+# Prompt for username and pass so it doesnt need to be stored in plaintext
+#
+  vars_prompt:
+    - name: username
+      prompt: "Username"
+      private: no
+    - name: password
+      prompt: "Password"
+      private: yes
+    - name: csv_file_name
+      prompt: "What is the filename of the csv?"
+      private: no
+
+
+##
+# Build provider dictionary to pass to module call
+#
+  vars:
+    palo_provider:
+      ip_address: "x.x.x.x"
+      username: '{{ username }}'
+      password: '{{ password }}'
+    panos_object:
+      ip_address: "10.18.1.32"
+      username: '{{ username }}'
+      password: '{{ password }}'
+    dns_name: "{{ lookup('community.general.dig', '{{ item.ip }}', 'qtype=PTR') | regex_replace ('.use.ucdp.net.', '_') | upper }}"
+
+ 
+
+# TASKS BEGIN
+
+
+
+  tasks:
+
+# READ THE CSV FILE
+
+    - name: reading the csv file
+      read_csv:
+        path: '{{ csv_file_name }}'
+      register: nat_list
+      delegate_to: localhost
+
+    - name: display user_list data
+      debug:
+       var: nat_list.list
+
+# DNS OUTPUT
+
+    - name: DNS output
+      debug:
+        msg: "{{ lookup('community.general.dig', '{{ item.ip }}', 'qtype=PTR') | regex_replace('.use.ucdp.net.') | upper }}"
+      loop: "{{ nat_list.list }}"
+  
+# CREATE ADDRESS OBJECT FOR LOCAL IP
+
+
+    - name: Create local IP address object
+      panos_address_object:
+        provider: "{{ palo_provider }}"
+        name: '{{ dns_name }}{{ item.ip }}'
+        value: '{{ item.ip }}'
+        description: '{{ item.nat }} ; {{ item.task }}'
+        device_group: 'device_group_name'
+        commit: false
+      register: localip  
+      loop: "{{ nat_list.list }}"
+
+
+    - name: display local ip address name
+      debug:
+       var: localip | json_query('results[*].invocation.module_args.name')
+
+
+
+# CREATE ADDRESS OBJECT FOR NAT IP
+
+    - name: Create NAT IP address object
+      panos_address_object:
+        provider: "{{ palo_provider }}"
+        name: '{{ dns_name }}NAT_{{ item.nat }}'
+        value: '{{ item.nat }}'
+        description: '{{ item.ip }} ; {{ item.task }}'
+        device_group: 'device_group_name'
+        commit: false
+      register: natip  
+      loop: "{{ nat_list.list }}"
+
+    - name: display nat ip address name
+      debug:
+       var: natip | json_query('results[*].invocation.module_args.name')
+
+
+
+
+
+
+# CREATE DNAT POLICY for LOCAL IP
+
+    - name: Create a static NAT rule
+      panos_nat_rule:
+        provider: "{{ palo_provider }}"
+        rule_name: "{{ item.name }}"
+        source_zone: ["SRC-ZONE"]
+        destination_zone: "DST-ZONE"
+        destination_ip: "{{ dns_name }}NAT_{{ item.nat }}"
+        service: "any"
+        to_interface: "vlan.xxxx"
+        snat_type: "static-ip"
+        dnat_address: "{{ dns_name }}{{ item.ip }}"
+        state: "present"
+        commit: false
+        device_group: "device_group_name"
+      loop: "{{ nat_list.list }}"
+
+
+
+
+# enable dns rewrite
+    - name: set dns rewrite
+      paloaltonetworks.panos.panos_type_cmd:
+        provider: "{{ palo_provider }}"
+        cmd: set
+        xpath: |
+          /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='device_group_name']/pre-rulebase/nat/rules/entry[@name="{{ item.name }}"]/destination-translation
+        element: |
+          <dns-rewrite>
+          <direction>reverse</direction>
+          </dns-rewrite>
+      register: resultconf
+      loop: "{{ nat_list.list }}"
+
+
+# set target devices
+    - name: set target devices
+      paloaltonetworks.panos.panos_type_cmd:
+        provider: "{{ palo_provider }}"
+        cmd: set
+        xpath: |
+          /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='device_group_name']/pre-rulebase/nat/rules/entry[@name="{{ item.name }}"]/target/devices
+        element: |
+          <entry name="012501009087">
+          <vsys>
+          <entry name="vsys2"/>
+          </vsys>
+          </entry>
+          <entry name="012501009092">
+          <vsys>
+          <entry name="vsys2"/>
+          </vsys>
+          </entry>
+      register: resultconf
+      loop: "{{ nat_list.list }}"
+
+
+
+
+
+

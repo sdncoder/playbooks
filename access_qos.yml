@@ -1,0 +1,65 @@
+---
+- hosts: ios
+  gather_facts: no
+  tasks:
+   - name: qos VOIP_ACL
+     ios_config:
+       lines:
+       - remark RTP VOIP and TELEPRESENCE
+       - permit udp any any range 16384 32767 dscp ef
+       parents: ip access-list extended VOIP_ACL
+
+   - name: qos SIGNALING_ACL
+     ios_config:
+       lines:
+       - remark Call Signaling/Jabber_CS3
+       - remark SCCP
+       - permit tcp any any range 2000 2002
+       - remark SIP
+       - permit tcp any any range 5060 5061
+       - permit udp any any range 5060 5061
+       parents: ip access-list extended SIGNALING_ACL
+
+# build class-maps
+   - name: qos class-map VOIP
+     ios_config:
+       lines:
+       - match access-group name VOIP_ACL
+       parents: class-map match-any VOIP
+
+   - name: qos class-map SIGNALING
+     ios_config:
+       lines:
+       - match access-group name SIGNALING_ACL
+       parents: class-map match-any SIGNALING
+
+   - name: qos class-map VOIP_OUT
+     ios_config:
+       lines:
+       - match dscp ef
+       parents: class-map match-any VOIP_OUT
+
+   - name: qos class-map SIGNALING_OUT
+     ios_config:
+       lines:
+       - match dscp cs3
+       parents: class-map match-any SIGNALING_OUT
+
+
+
+# build classes and add to policy-map
+   - name: policy-map QOS_IN
+     ios_config:
+       lines:
+       - class VOIP
+       - set dscp ef
+       - class SIGNALING
+       - set dscp cs3
+       parents: policy-map QOS_IN
+
+   - name: policy-map QOS_OUT
+     ios_config:
+       lines:
+       - class VOIP_OUT
+       - priority level 1
+       - police rate percent 10

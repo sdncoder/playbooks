@@ -1,0 +1,57 @@
+---
+# Ansible-Playbook for Panorama NGFW
+
+- name: Add DNAT
+  hosts: pano
+  gather_facts: false
+  connection: local
+
+# Palo Alto library
+  collections:
+    - paloaltonetworks.panos
+
+# provider variables
+  vars:
+    palo_provider:
+      ip_address: "10.18.1.32"
+      api_key: "{{ api_key_vault }}"
+
+# variable load file with zone and IP info
+  vars_files:
+    - "./palo_object_var3.yml"
+
+# include ansible-vault password for hosts
+  tasks:
+    - name: include vault password variables
+      include_vars: apikeyvars.yml
+
+# add test dnat
+    - name: Create a static NAT rule
+      panos_nat_rule:
+        provider: "{{ palo_provider }}"
+        rule_name: "{{ rule_name }}"
+        source_zone: ["{{ source_zone }}"]
+        destination_zone: "{{ destination_zone }}"
+        destination_ip: ["{{ destination_ip }}"]
+        service: "any"
+        to_interface: "vlan.2112"
+        snat_type: "static-ip"
+        dnat_address: "xxx"
+        state: "present"
+        commit: false
+        device_group: "xxxyyyw"
+
+# enable dns rewrite
+    - name: enable dns rewrite
+      panos_type_cmd:
+        provider: "{{ palo_provider }}"
+        cmd: set
+        xpath: |
+          /config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='xxxyyy']/pre-rulebase/nat/rules/entry[@name='ansibletest']
+        element: |
+          <destination-translation>
+          <translated-address>xxx</translated-address>
+          <dns-rewrite>
+          <direction>reverse</direction>
+          </dns-rewrite>
+          </destination-translation>

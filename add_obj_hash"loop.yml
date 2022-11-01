@@ -1,0 +1,32 @@
+---
+# Ansible-Playbook for stand-alone NGFW (no Panorama)
+# address object creation from interation of hashes
+
+- name: Add address object
+  hosts: localhost
+  connection: local
+
+# Palo Alto library
+  collections:
+    - paloaltonetworks.panos
+
+# ansible-playbook
+  vars:
+      username: "{{ username }}"
+      password: "{{ password }}"
+
+  tasks:
+    - name: Create address object
+      panos_address_object:
+        provider:
+          ip_address: "172.16.1.130"
+          username: "{{ username }}"
+          password: "{{ password }}"
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+      loop:
+        - { name: 'ans10', value: '10.10.10.1/32' }
+        - { name: 'ans11', value: '11.11.11.1/32' }
+        - { name: 'ans12', value: '12.12.12.1/32' }
+        - { name: 'ans13', value: '13.13.13.1/32' }
+        - { name: 'ans14', value: '14.14.14.1/32' }

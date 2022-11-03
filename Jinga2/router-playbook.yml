@@ -1,0 +1,24 @@
+---
+# variable file with jinga2 to build playbook
+ - hosts: 127.0.0.1 # localhost
+ # variable to build playbook
+ # static_objects are variables that are not used in jinga2 loop_objects
+ # loop_objects are used in jinga2 loops
+   vars:
+     static_objects:
+       hostname: test_switch
+
+     loop_objects:
+       - interface: vlan 50
+         vrf: VRF50
+         ip: 10.230.10.1 255.255.255.0
+
+       - interface: vlan 60
+         vrf: VRF60
+         ip: 10.240.10.1 255.255.255.0
+# variables in vars are used by jinga2 template and output is a playbook
+   tasks:
+    - name: jinga2 example
+      template:
+        src: /etc/ansible/router_test.j2
+        dest: /etc/ansible/configs/build.txt

@@ -3,3 +3,5 @@
 
 * Cisco ACL management playbooks
 * Palo Alto objects and NAT creation  
+
+**Ansible methodology**  

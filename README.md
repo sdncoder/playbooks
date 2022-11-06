@@ -1,7 +1,5 @@
 
-**Ansible methods**    
-This is an example of a playbook that *loops* through interfaces to deploy standard config:
-
+Ansible loop using parents/with_items  
 ```
 tasks:
   - name: loop standard config

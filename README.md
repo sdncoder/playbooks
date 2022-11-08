@@ -21,8 +21,6 @@ interface {{x.interface}}
  !
 {% endfor %}
 ```
-
-
 **Ansible loop using parents/with_items**    
 ```
 tasks:
@@ -38,7 +36,7 @@ tasks:
         - interface vlan22
         - interface vlan32
 ```
-This is an example of a playbook that deploys routers specific config:
+**static playbook with no read_lines variables**  
 ```
 tasks:
   - name: int description
@@ -57,7 +55,7 @@ tasks:
         - vrf member A2
         - ip address 100.123.x.x 255.255.255.248
 ```
-Playbooks can also be *stacked*.  A playbook can be built to call other playbooks.  
+?**Playbooks can also be *stacked ~built to call other playbooks.**  
 ```
 - import_playbook: metric_before.yml
 - import_playbook: te_config.yml

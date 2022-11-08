@@ -55,13 +55,12 @@ tasks:
         - vrf member A2
         - ip address 100.123.x.x 255.255.255.248
 ```
-?**Playbooks can also be *stacked ~built to call other playbooks.**  
+**Playbooks can also be *stacked ~built to call other playbooks.**  
 ```
 - import_playbook: metric_before.yml
 - import_playbook: te_config.yml
 - import_playbook: metric_after.yml
 ```
-
 
 #### Ansible server access and playbook execution
 

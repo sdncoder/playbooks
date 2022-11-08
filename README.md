@@ -1,5 +1,6 @@
-### Ansible Playbooks
-**Cisco and Palo Alto**  
+#### Ansible Playbooks
+*Cisco and Palo Alto playbooks  
+*Jinga2 loop to create playbook with_items  
 
 
 

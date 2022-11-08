@@ -1,6 +1,6 @@
 #### Ansible Playbooks  
 * Cisco and Palo Alto playbooks  
-* Jinga2 loop to create playbook with_items  
+* Jinga2 to create playbook with_items  
 
 **Jinga2**  
 Python based templating engine.   Used to build Ansible Playbooks.  
@@ -21,9 +21,6 @@ interface {{x.interface}}
  !
 {% endfor %}
 ```
-
-
-
 
 
 **Ansible loop using parents/with_items**    

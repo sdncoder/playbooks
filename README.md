@@ -3,6 +3,9 @@
 *Jinga2 loop to create playbook with_items  
 
 **Jinga2**  
+Python based templating engine.   Used to build Ansible Playbooks.  
+Playbook with static and dynamic variables.  
+Hostname of a device as a static, per interface router address as a loop variable (pulled in from spreadsheet for example)  
 ```{# jinga2 file for main.yml to build network config #}
 static switch config here
 !

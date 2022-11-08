@@ -2,6 +2,22 @@
 *Cisco and Palo Alto playbooks  
 *Jinga2 loop to create playbook with_items  
 
+**Jinga2**  
+```{# jinga2 file for main.yml to build network config #}
+static switch config here
+!
+{# call variables from main.yml #}
+hostname {{static_objects.hostname}}
+!
+{#interface loop#}
+{% for x in loop_objects %}
+interface {{x.interface}}
+ ip vrf forwarding {{x.vrf}}
+ ip address {{x.ip}}
+ no shutdown
+ !
+{% endfor %}
+```
 
 
 

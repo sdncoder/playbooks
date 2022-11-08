@@ -1,5 +1,12 @@
+### Ansible Playbooks
+**Cisco and Palo Alto**  
 
-Ansible loop using parents/with_items  
+
+
+
+
+
+**Ansible loop using parents/with_items**    
 ```
 tasks:
   - name: loop standard config
